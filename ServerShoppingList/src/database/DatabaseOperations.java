@@ -6,16 +6,22 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 
 public class DatabaseOperations {
 	private static Connection connection = null;
+	private static final Logger LOG = Logger.
+			getLogger(DatabaseOperations.class.getName());
 	
 	public DatabaseOperations() {
 		try {
 			Class.forName("org.postgresql.Driver");
 
-			connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/nakup", "postgres",
+			connection = DriverManager.getConnection(
+					"jdbc:postgresql://localhost:5432/nakup", "postgres",
 					"123456");
 			connection.setAutoCommit(false);
 		} catch (Exception e) {
@@ -23,6 +29,7 @@ public class DatabaseOperations {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
 			System.exit(0);
 		}
+		LOG.info("Opened database successfully");
 		System.out.println("Opened database successfully");
 	}
 	
@@ -37,17 +44,19 @@ public class DatabaseOperations {
 			
 			if (results.next()) {
 				newHumanID = results.getString("max");
-				newHumanID = Integer.toString(Integer.parseInt(newHumanID) + 1);
+				newHumanID = Integer.toString(Integer.parseInt(newHumanID)+1);
 			}
 			else newHumanID = "1";
 			
-			sql = "BEGIN; INSERT INTO CLOVEK (id, name) VALUES ("+newHumanID + " , '" + name +"')";
+			sql = "BEGIN; INSERT INTO CLOVEK (id, name) VALUES "
+					+ "("+newHumanID + " , '" + name +"')";
 			stm.executeUpdate(sql);
 			connection.commit();
 			System.out.println("Clovek vytvoreny");
 		}
 		catch(SQLException e){
 			e.printStackTrace();
+			LOG.log(Level.SEVERE,"Database problem with creating new human",e);
 			
 		}
 		return newHumanID;
@@ -72,16 +81,18 @@ public class DatabaseOperations {
 			}
 			else groupID = "1";
 			
-			sql = "BEGIN; INSERT INTO SKUPINA (id, name, zoznam) VALUES ("+groupID + " , '" + groupName +"', '')";
+			sql = "BEGIN; INSERT INTO SKUPINA (id, name, zoznam) "
+					+ "VALUES ("+groupID + " , '" + groupName +"', '')";
 			stm.executeUpdate(sql);
-			sql = "INSERT INTO SKUPINA_CLOVEK (skupina_id, clovek_id) VALUES ("+groupID + " , " + humanID +")";
+			sql = "INSERT INTO SKUPINA_CLOVEK (skupina_id, clovek_id) "
+					+ "VALUES ("+groupID + " , " + humanID +")";
 			stm.executeUpdate(sql);
 			connection.commit();
 			
 		}
 		catch(SQLException e){
-				
 				e.printStackTrace();
+				LOG.log(Level.SEVERE,"Database problem with creating new group", e);
 		}
 		return groupID;
 		
@@ -111,6 +122,7 @@ public class DatabaseOperations {
 			
 		}
 		catch(SQLException e){
+			LOG.log(Level.SEVERE,"Database problem leaving group", e);
 				e.printStackTrace();
 		}
 		
@@ -134,6 +146,7 @@ public class DatabaseOperations {
 		}
 		catch(SQLException e){
 				e.printStackTrace();
+				LOG.log(Level.SEVERE,"Database problem with showing group text", e);
 			}
 		
 		return list;
@@ -166,6 +179,7 @@ public class DatabaseOperations {
 			connection.commit();
 		}
 		catch(SQLException e){
+				LOG.log(Level.SEVERE,"Database problem with adding human to group", e);
 				e.printStackTrace();
 			}
 		
@@ -193,6 +207,7 @@ public class DatabaseOperations {
 			connection.commit();
 		}
 		catch(SQLException e){
+			LOG.log(Level.SEVERE,"Database problem with adding item to group", e);
 				e.printStackTrace();
 			}
 		
@@ -219,34 +234,31 @@ public class DatabaseOperations {
 			
 			int rowCount = list.length() - list.replace("\n", "").length();
 			System.out.println(rowCount);
-			if(rowCount == 0) 
+			
+
+			int i = 0;
+			while(list.contains("\n"))
 			{
-				newList = "";
-			}
-			else 
-			{
-				int i = 0;
-				while(list.contains("\n"))
+				if(i != row)
 				{
-					if(i != row)
-					{
-						newList = newList + list.substring(0,list.indexOf("\n")+1);
-					}
-					list = list.substring(list.indexOf("\n")+1);
-					i++;
+					newList = newList + list.substring(0,list.indexOf("\n")+1);
 				}
+				list = list.substring(list.indexOf("\n")+1);
+				i++;
+			}
 				
-				if( i != row)
-				{
-					newList = newList + list;
-				}
+			if( i != row)
+			{
+				newList = newList + list;
 			}
+
 			sql = "BEGIN;UPDATE skupina SET zoznam = '" + newList + "' WHERE id = " + groupID;
 			stm.executeUpdate(sql);
 			connection.commit();
 			
 		}
 		catch(SQLException e){
+				LOG.log(Level.SEVERE,"Database problem with deleting text from group", e);
 				e.printStackTrace();
 			}
 
@@ -273,6 +285,7 @@ public class DatabaseOperations {
 			System.out.println(groups);
 		}
 		catch(SQLException e){
+			LOG.log(Level.SEVERE,"Database problem with all human groups", e);
 				e.printStackTrace();
 			}
 		

@@ -9,6 +9,8 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Enumeration;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
@@ -27,6 +29,8 @@ import database.DatabaseOperations;
 @WebServlet("/Server")
 public class Server extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	private static final Logger LOG = Logger.
+			getLogger(DatabaseOperations.class.getName());
        
     /**
      * @see HttpServlet#HttpServlet()
@@ -43,6 +47,7 @@ public class Server extends HttpServlet {
 		// TODO Auto-generated method stub
 		//response.getWriter().append("Served at: ").append(request.getContextPath());
 		//JSONObject json = new JSONObject();
+		LOG.info("Servlet works");
 		response.getOutputStream().println("Hurray !! This Servlet Works");
 		
 		
@@ -51,7 +56,8 @@ public class Server extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException 
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+			throws ServletException, IOException 
 	{
 		try{
 			int length = request.getContentLength();
@@ -65,11 +71,8 @@ public class Server extends HttpServlet {
 			
 			String received = new String(input);
 			
-			if(received.length()>0) System.out.println("Vacsie\n");
-			else System.out.println("Mensie");
 			
 			char type = received.charAt(0);
-			//String type = received.substring(0, 1);
 			String tmp = received;
 			received = tmp.substring(1);
 			System.out.println(type);
@@ -114,7 +117,7 @@ public class Server extends HttpServlet {
 				response.getWriter().close();
 				
 				} catch (IOException ioe) {
-			
+					LOG.log(Level.SEVERE, "Servlet problem", ioe);
 				}
 		}
 	}
